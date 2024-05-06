@@ -124,5 +124,11 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
         };
 
     };
+ //-------------------- Funcion para armar galeria de artistas en el front ----------------------------
+
+    public func verArtistas(): async [Artista]{
+        Iter.toArray(Map.vals<Principal, Artista>(artistas));
+    };
+    
 
 };
