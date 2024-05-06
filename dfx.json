@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "donate_to_artists_ICP_backend": {
+      "main": "src/donate_to_artists_ICP_backend/main.mo",
+      "type": "motoko"
+    },
+    "donate_to_artists_ICP_frontend": {
+      "dependencies": [
+        "donate_to_artists_ICP_backend"
+      ],
+      "source": [
+        "src/donate_to_artists_ICP_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "donate_to_artists_ICP_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
