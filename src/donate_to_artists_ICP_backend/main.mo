@@ -55,7 +55,7 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
     };
 
     public shared ({caller}) func removerAdmn(p: Principal): async  Bool{
-        assert (deployer == caller);
+        assert (deployer == caller and p != caller);
         ignore Set.remove<Principal>(admins, Map.phash, p);
         true
     };
