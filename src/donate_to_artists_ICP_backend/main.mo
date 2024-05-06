@@ -48,18 +48,17 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
         Set.has<Principal>(admins, Map.phash, p);
     };
 
-    public shared ({caller}) func agregarAdmn(p: Principal): async  Bool{
+    public shared ({caller}) func agregarAdmin(p: Principal): async  Bool{
         assert (esAdmin(caller));
         ignore Set.put<Principal>(admins, Map.phash, p);
         true
     };
 
-    public shared ({caller}) func removerAdmn(p: Principal): async  Bool{
+    public shared ({caller}) func removerAdmin(p: Principal): async  Bool{
         assert (deployer == caller and p != caller);
         ignore Set.remove<Principal>(admins, Map.phash, p);
         true
     };
-
 
     public shared ({ caller }) func registrarse(nick : Text, email : Text, foto : ?Blob) : async Uid {
         assert (not Principal.isAnonymous(caller));
