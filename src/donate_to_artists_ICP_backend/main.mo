@@ -1,10 +1,13 @@
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
+import Iter "mo:base/Iter";
 import Map "mo:map/Map";
 import Set "mo:map/Set";
 import Types "./types";
 
 shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
+
+    stable let deployer = caller;
 
     public type Usuario = Types.Usuario;
     public type Artista = Types.Artista;
@@ -30,11 +33,7 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
     let artistas = Map.new<Principal, Artista>();
     let admins = Set.new<Principal>();
 
-    for (i in _admins.vals()){
-        ignore Set.put<Principal>(admins, Map.phash, i);
-    };
-
-
+    for (i in _admins.vals()){ ignore Set.put<Principal>(admins, Map.phash, i)};
 
     let artistasIngresantes = Map.new<Principal, RegistroArtistaForm>();
 
@@ -48,6 +47,19 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
     func esAdmin(p : Principal) : Bool {
         Set.has<Principal>(admins, Map.phash, p);
     };
+
+    public shared ({caller}) func agregarAdmn(p: Principal): async  Bool{
+        assert (esAdmin(caller));
+        ignore Set.put<Principal>(admins, Map.phash, p);
+        true
+    };
+
+    public shared ({caller}) func removerAdmn(p: Principal): async  Bool{
+        assert (deployer == caller);
+        ignore Set.remove<Principal>(admins, Map.phash, p);
+        true
+    };
+
 
     public shared ({ caller }) func registrarse(nick : Text, email : Text, foto : ?Blob) : async Uid {
         assert (not Principal.isAnonymous(caller));
@@ -79,6 +91,7 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
     };
 
     public shared ({caller}) func verArtistasIngresantes( ): async [(Principal, RegistroArtistaForm)] {
+        assert (esAdmin(caller));
         Iter.toArray(Map.entries<Principal, RegistroArtistaForm>(artistasIngresantes));
     };
 
