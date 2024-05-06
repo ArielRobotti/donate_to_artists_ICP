@@ -4,7 +4,7 @@ import Map "mo:map/Map";
 import Set "mo:map/Set";
 import Types "./types";
 
-shared ({ caller }) actor class Plataforma(admins : [Principal]) {
+shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
 
     public type Usuario = Types.Usuario;
     public type Artista = Types.Artista;
@@ -29,6 +29,12 @@ shared ({ caller }) actor class Plataforma(admins : [Principal]) {
     let usuarios = Map.new<Principal, Usuario>();
     let artistas = Map.new<Principal, Artista>();
     let admins = Set.new<Principal>();
+
+    for (i in _admins.vals()){
+        ignore Set.put<Principal>(admins, Map.phash, i);
+    };
+
+
 
     let artistasIngresantes = Map.new<Principal, RegistroArtistaForm>();
 
@@ -70,6 +76,10 @@ shared ({ caller }) actor class Plataforma(admins : [Principal]) {
                 return "Solicitud de registro como artista ingresada exitosamente";
             };
         };
+    };
+
+    public shared ({caller}) func verArtistasIngresantes( ): async [(Principal, RegistroArtistaForm)] {
+        Iter.toArray(Map.entries<Principal, RegistroArtistaForm>(artistasIngresantes));
     };
 
     public shared ({ caller }) func aprobarRegistroDeArtista(solicitante : Principal) : async Aid {
