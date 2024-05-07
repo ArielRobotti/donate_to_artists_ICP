@@ -33,7 +33,7 @@ Se establecen inicialmente tres tipos de perfil:
 los cuales se podrán registrar bajo la siguiente lógica:
 * Un usuario podrá registrarse en la plataforma identificandose previamente mediante Internet Identity para luego registrar un nombre de usuario, un email, y opcionalmente una imagen de perfil.
 ###
-* La verificacion de un Usuario se concreta mediante un mecanismo de validación de contacto, el cuál consistirá en principio en el email que haya indicado en el registro.
+* La verificacion de un Usuario se concreta mediante un mecanismo de validación de contacto, el cuál será en principio el email que haya indicado en el registro (se agregarán opciones posteriormente, como número telefónico etc).
 Dicho contacto se validará mediante el envio de un código de verificacion desde la plataforma hacia ese contacto, para luego ser contrastado dicho código de verificación con el código que el usuario indique haber recibido.
 ### 
 * Un artista podrá registrarse bajo el rol de Artista habiendose registrado previamente como Usuario verificado, y completando un formulario de registro, el cual posteriormente será evaluado por la administración.
