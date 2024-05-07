@@ -2,43 +2,67 @@ import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Iter "mo:base/Iter";
 import Map "mo:map/Map";
+import { thash; phash } "mo:map/Map";
+import Time "mo:base/Time";
+import Array "mo:base/Array";
 import Set "mo:map/Set";
 import Types "./types";
 
-shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
+shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
 
     stable let deployer = caller;
 
     public type Usuario = Types.Usuario;
     public type Artista = Types.Artista;
-    public type Uid = Nat;
-    public type Aid = Nat;
+    public type Uid = Types.Uid; //Usuario id
+    public type Aid = Types.Aid; //Artista id
+    public type Pid = Types.Pid; //Proyecto id
 
     public type RegistroArtistaForm = Types.RegistroArtistaForm;
+    public type FinanciamientoForm = Types.FinanciamientoForm;
+    public type Proyecto = Types.Proyecto;
 
     stable var actualUid : Nat = 0;
     stable var actualAid : Nat = 0;
+    stable var actualPid : Nat = 0;
 
-    func generarUid() : Nat {
+    func generarUid() : Text {
         actualUid += 1;
-        actualUid;
+        "U" # Nat.toText(actualUid);
     };
 
-    func generarAid() : Nat {
+    func generarAid() : Text {
         actualAid += 1;
-        actualAid;
+        "A" # Nat.toText(actualAid);
     };
 
-    let usuarios = Map.new<Principal, Usuario>();
-    let artistas = Map.new<Principal, Artista>();
-    let admins = Set.new<Principal>();
+    func generarPid() : Text {
+        actualPid += 1;
+        "P" # Nat.toText(actualPid);
+    };
 
-    for (i in _admins.vals()){ ignore Set.put<Principal>(admins, Map.phash, i)};
+    stable let usuarios = Map.new<Principal, Usuario>();
+    stable let artistas = Map.new<Principal, Artista>();
+    stable let admins = Set.new<Principal>();
 
-    let artistasIngresantes = Map.new<Principal, RegistroArtistaForm>();
+    for (i in _admins.vals()) {
+        ignore Set.put<Principal>(admins, Map.phash, i);
+    };
+
+    stable let artistasIngresantes = Map.new<Principal, RegistroArtistaForm>();
+    stable let proyectosIngresantes = Map.new<Principal, FinanciamientoForm>();
+
+    stable let proyectosAprobados = Map.new<Pid, Proyecto>();
 
     func esUsuario(p : Principal) : Bool {
         return switch (Map.get<Principal, Usuario>(usuarios, Map.phash, p)) {
+            case null { false };
+            case _ { true };
+        };
+    };
+
+    func esArtista(p : Principal) : Bool {
+        return switch (Map.get<Principal, Artista>(artistas, Map.phash, p)) {
             case null { false };
             case _ { true };
         };
@@ -48,16 +72,16 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
         Set.has<Principal>(admins, Map.phash, p);
     };
 
-    public shared ({caller}) func agregarAdmin(p: Principal): async  Bool{
+    public shared ({ caller }) func agregarAdmin(p : Principal) : async Bool {
         assert (esAdmin(caller));
         ignore Set.put<Principal>(admins, Map.phash, p);
-        true
+        true;
     };
 
-    public shared ({caller}) func removerAdmin(p: Principal): async  Bool{
+    public shared ({ caller }) func removerAdmin(p : Principal) : async Bool {
         assert (deployer == caller and p != caller);
         ignore Set.remove<Principal>(admins, Map.phash, p);
-        true
+        true;
     };
 
     public shared ({ caller }) func registrarse(nick : Text, email : Text, foto : ?Blob) : async Uid {
@@ -71,7 +95,7 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
             foto;
         };
         ignore Map.put<Principal, Usuario>(usuarios, Map.phash, caller, nuevoUsuario);
-        actualUid;
+        "U" # Nat.toText(actualUid);
     };
 
     public shared ({ caller }) func registrarseComoArtista(_init : RegistroArtistaForm) : async Text {
@@ -89,7 +113,7 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
         };
     };
 
-    public shared ({caller}) func verArtistasIngresantes( ): async [(Principal, RegistroArtistaForm)] {
+    public shared ({ caller }) func verArtistasIngresantes() : async [(Principal, RegistroArtistaForm)] {
         assert (esAdmin(caller));
         Iter.toArray(Map.entries<Principal, RegistroArtistaForm>(artistasIngresantes));
     };
@@ -98,37 +122,92 @@ shared ({ caller }) actor class Plataforma(_admins : [Principal]) {
         assert (esAdmin(caller));
         let usuario = Map.get<Principal, Usuario>(usuarios, Map.phash, solicitante);
         switch usuario {
-            case null { assert false; 0 };
+            case null { assert false; "" };
             case (?usuario) {
-                let solicitud = Map.get<Principal, RegistroArtistaForm>(artistasIngresantes, Map.phash, solicitante);
+                let solicitud = Map.remove<Principal, RegistroArtistaForm>(artistasIngresantes, Map.phash, solicitante);
                 switch (solicitud) {
-                    case null { assert false; 0 };
+                    case null { assert false; "" };
                     case (?solicitud) {
-                        let nuevoArtista: Artista = {
+                        let nuevoArtista : Artista = {
+                            solicitud with 
                             principal = solicitante;
                             aid = generarAid();
-                            pseudonimo = solicitud.pseudonimo;
-                            nombreDePila = solicitud.nombreDePila;
-                            redesSociales = solicitud.redesSociales;
-                            email = usuario.email;
-                            fotoArtistica = solicitud.fotoArtistica;
                             propinasRecibidas = 0;
                             seguidores = 0;
+                            proyectos = [];
                         };
                         ignore Map.put<Principal, Artista>(artistas, Map.phash, solicitante, nuevoArtista);
-                        ignore Map.remove<Principal, RegistroArtistaForm>(artistasIngresantes, Map.phash, solicitante);
-                        actualAid;
+                        "A" # Nat.toText(actualAid);
                     };
                 };
             };
         };
-
     };
- //-------------------- Funcion para armar galeria de artistas en el front ----------------------------
 
-    public func verArtistas(): async [Artista]{
+    //-------------------- Funcion para armar galeria de artistas en el front ----------------------------
+
+    public func verArtistas() : async [Artista] {
         Iter.toArray(Map.vals<Principal, Artista>(artistas));
     };
-    
+
+    //------------------- Solicitud de financiamiento de produccion musical  -----------------------------
+
+    public shared ({ caller }) func solicitudDeFinanciamiento(_init : FinanciamientoForm) : async Text {
+        assert (esArtista(caller));
+        switch (Map.get<Principal, FinanciamientoForm>(proyectosIngresantes, phash, caller)) {
+            case (?solicitudPrevia) {
+                return "Usted tiene pendiente una solicitud para el proyecto " # solicitudPrevia.nombreProyecto;
+            };
+            case null {
+                ignore Map.put<Principal, FinanciamientoForm>(proyectosIngresantes, phash, caller, _init);
+                return "Su solicitud fue ingresada con éxito. En los proximos dias será contactado via email";
+            };
+        };
+    };
+
+    //----------------- Ver solicitudes de financiamiento ---------------------------------------------------
+
+    public shared ({ caller }) func verSolicitudesFinanciamiento() : async [(Principal, FinanciamientoForm)] {
+        assert (esAdmin(caller));
+        let iterEntries = Map.entries<Principal, FinanciamientoForm>(proyectosIngresantes);
+        Iter.toArray<(Principal, FinanciamientoForm)>(iterEntries);
+    };
+    //----------------- Aprobación y rechazo de financiamiento de produccion musical ----------------------------------
+
+    public shared ({ caller }) func aprobarFinanciamiento(p : Principal) : async Pid {
+        assert (esAdmin(caller));
+        let solicitud = Map.remove<Principal, FinanciamientoForm>(proyectosIngresantes, phash, p);
+        switch (solicitud) {
+            case null { assert false; "" };
+            case (?solicitud) {
+                let artista = Map.get<Principal, Artista>(artistas, phash, p);
+                switch artista {
+                    case null { assert false; "" };
+                    case (?artista) {
+                        let proyecto : Proyecto = {
+                            solicitud with
+                            fechaAprobacion = Time.now();
+                            fondosObtenidos = 0;
+                            estado = #Aprobado;
+                        };
+                        let id = generarPid();
+                        ignore Map.put<Pid, Proyecto>(proyectosAprobados, thash, id, proyecto);
+                        let setProyectos = Set.fromIter<Pid>(artista.proyectos.vals(), thash);
+                        ignore Set.put<Pid>(setProyectos, thash, id);
+                        let proyectos =  Set.toArray<Pid>(setProyectos);
+                        ignore Map.put<Principal, Artista>(artistas, phash, p, {artista with proyectos});
+                        id;
+                     };
+                };
+            };
+        };
+    };
+
+    public shared ({caller}) func rechazarFinanciamiento(p: Principal ): async () {
+        assert(esAdmin(caller));
+        ignore Map.remove<Principal, FinanciamientoForm>(proyectosIngresantes, phash, p);
+    };
+
+    //--------------------------------------------------------------------------------------------------------
 
 };

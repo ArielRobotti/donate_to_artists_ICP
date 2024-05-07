@@ -1,5 +1,9 @@
 {
   "canisters": {
+    "internet_identity": {
+      "type": "pull",
+      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+    },
     "back": {
       "main": "src/donate_to_artists_ICP_backend/main.mo",
       "type": "motoko"
@@ -11,8 +15,7 @@
       "source": [
         "src/donate_to_artists_ICP_frontend/dist"
       ],
-      "type": "assets",
-      "workspace": "donate_to_artists_ICP_frontend"
+      "type": "assets"
     }
   },
   "defaults": {
