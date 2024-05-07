@@ -84,7 +84,7 @@ shared ({ caller }) actor class _Plataforma() {
     };
 
     public shared ({ caller }) func agregarAdmin(p : Principal) : async Bool {
-        assert (esAdmin(caller));
+        assert (esAdmin(caller) and esUsuario(p));
         ignore Set.put<Principal>(admins, Map.phash, p);
         true;
     };
@@ -266,6 +266,7 @@ shared ({ caller }) actor class _Plataforma() {
                                 votos = proyecto.votos + 1;
                             };
                             ignore Map.put<Pid, Proyecto>(proyectosAprobados, thash, id, proyectoActualizado);
+                            //TODO agregar Pid a lista de proyectos votados del usuario
                         };
                     };
                 };
@@ -276,6 +277,9 @@ shared ({ caller }) actor class _Plataforma() {
     public shared ({ caller }) func comprarTokens() : async () {
         //TODO
     };
+
+
+    //-------------------- Info Plataforma -----------------------------
 
     public query func verNombreProyecto(): async Text{
         "Donate to artists ICP\n" #
@@ -288,7 +292,6 @@ shared ({ caller }) actor class _Plataforma() {
 
     public query func verManifiesto(): async [Text] {
         Manifiesto.manifiesto;
-
     }
 
 

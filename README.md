@@ -1,8 +1,10 @@
-# donate_to_artists_ICP
-## Deploy de backend en mainnet
-### https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=vl6n6-3iaaa-aaaak-qigpa-cai
+# Donate_to_artists_ICP
 
+---
+#### Deploy de backend en mainnet
+#### https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=vl6n6-3iaaa-aaaak-qigpa-cai
 
+---
 ## Manifiesto de la Plataforma
 
 El siguiente manifiesto establece las bases filosóficas y conductuales de la comunidad en relación con la plataforma.
@@ -18,3 +20,20 @@ Nos comprometemos a cultivar un entorno inclusivo y diverso, donde todos los art
 En resumen, nuestra plataforma es más que un mero sistema de transacciones financieras; es un movimiento cultural que promueve la democratización del arte y la música, empoderando a los artistas y a sus seguidores para forjar un futuro donde la creatividad florezca libremente y sin barreras.
 
 Únete a nosotros en esta emocionante aventura y sé parte del cambio. Juntos, podemos construir un mundo donde el arte sea verdaderamente accesible y sostenible para todos.
+
+---
+## Lógica de negocio y fundamentos de la plataforma
+
+Se establecen inicialmente tres tipos de perfil:
+
+* Perfil de Usuario
+* Perfil de Artista
+* Perfil de Administrador
+
+los cuales se podrán registrar bajo la siguiente lógica:
+* Un usuario podrá registrarse en la plataforma identificandose previamente mediante Internet Identity para luego registrar un nombre de usuario, un email, y opcionalmente una imagen de perfil.
+###
+* Un artista podrá registrarse bajo es el rol de Artista habiendose registrado previamente como Usuario verificado, y completando un formulario de registro, el cual posteriormente será evaluado por la administración.
+###
+* El primer administador de la plataforma será el deployer del Canister backend, y en calidad de administrador podrá agregar a otros administradores con la sola condición de que éstos estén registrados como usuarios. Los administradores también podrán agregar a otros administradores con la misma condición, pero la exclusividad de eliminar administradores será del deployer del canister y éste no podrá eliminarse a si mismo.
+
