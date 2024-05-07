@@ -5,6 +5,8 @@ import Map "mo:map/Map";
 import { thash; phash } "mo:map/Map";
 import Time "mo:base/Time";
 import Array "mo:base/Array";
+import Buffer "mo:base/Buffer";
+import Text "mo:base/Text";
 import Set "mo:map/Set";
 import Types "./types";
 
@@ -61,6 +63,14 @@ shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
         };
     };
 
+    // ------------- Funciones genericas -------------------------------------
+
+    func enArray<T>(a : [T], e : T, equal : (T, T) -> Bool) : Bool {
+        for (i in a.vals()) { if (equal(i, e)) { return true } };
+        return false;
+    };
+    //----------------------------------------------------------------------------
+
     func esArtista(p : Principal) : Bool {
         return switch (Map.get<Principal, Artista>(artistas, Map.phash, p)) {
             case null { false };
@@ -93,6 +103,7 @@ shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
             nick;
             email;
             foto;
+            proyectosVotados = [];
         };
         ignore Map.put<Principal, Usuario>(usuarios, Map.phash, caller, nuevoUsuario);
         "U" # Nat.toText(actualUid);
@@ -129,7 +140,7 @@ shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
                     case null { assert false; "" };
                     case (?solicitud) {
                         let nuevoArtista : Artista = {
-                            solicitud with 
+                            solicitud with
                             principal = solicitante;
                             aid = generarAid();
                             propinasRecibidas = 0;
@@ -188,26 +199,77 @@ shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
                             solicitud with
                             fechaAprobacion = Time.now();
                             fondosObtenidos = 0;
+                            votos = 0;
                             estado = #Aprobado;
                         };
                         let id = generarPid();
                         ignore Map.put<Pid, Proyecto>(proyectosAprobados, thash, id, proyecto);
                         let setProyectos = Set.fromIter<Pid>(artista.proyectos.vals(), thash);
                         ignore Set.put<Pid>(setProyectos, thash, id);
-                        let proyectos =  Set.toArray<Pid>(setProyectos);
-                        ignore Map.put<Principal, Artista>(artistas, phash, p, {artista with proyectos});
+                        let proyectos = Set.toArray<Pid>(setProyectos);
+                        ignore Map.put<Principal, Artista>(artistas, phash, p, { artista with proyectos });
                         id;
-                     };
+                    };
                 };
             };
         };
     };
 
-    public shared ({caller}) func rechazarFinanciamiento(p: Principal ): async () {
-        assert(esAdmin(caller));
+    public shared ({ caller }) func rechazarFinanciamiento(p : Principal) : async () {
+        assert (esAdmin(caller));
         ignore Map.remove<Principal, FinanciamientoForm>(proyectosIngresantes, phash, p);
     };
 
-    //--------------------------------------------------------------------------------------------------------
+    //------------------------------------ Funciones publicas ------------------------------------------------
+
+    public query func verProyectos() : async [(Pid, Proyecto)] {
+        Iter.toArray<(Pid, Proyecto)>(Map.entries<Pid, Proyecto>(proyectosAprobados));
+    };
+
+    public query func verProyectosDe(artistaP : Principal) : async [Proyecto] {
+        switch (Map.get<Principal, Artista>(artistas, phash, artistaP)) {
+            case null { return [] };
+            case (?artista) {
+                let proyectosDe = Buffer.fromArray<Proyecto>([]);
+                for (pId in artista.proyectos.vals()) {
+                    switch (Map.get<Pid, Proyecto>(proyectosAprobados, thash, pId)) {
+                        case (?pr) {
+                            proyectosDe.add(pr);
+                        };
+                        case _ {};
+                    };
+                };
+                return Buffer.toArray<Proyecto>(proyectosDe);
+            };
+        };
+    };
+
+    public query func verProyectoPorID(id : Pid) : async ?Proyecto {
+        Map.get<Pid, Proyecto>(proyectosAprobados, thash, id);
+    };
+
+    //------------------------------    Votar proyectos  --------------------------------
+    
+    public shared ({ caller }) func votarProyecto(id : Pid) : async () {
+        let usuario = Map.get<Principal, Usuario>(usuarios, phash, caller);
+        switch usuario {
+            case null { return };
+            case (?usuario) {
+                let proyecto = Map.get<Pid, Proyecto>(proyectosAprobados, thash, id);
+                switch proyecto {
+                    case null { return };
+                    case (?proyecto) {
+                        if (enArray<Pid>(usuario.proyectosVotados, id, Text.equal)){
+                            let proyectoActualizado = {
+                                proyecto with
+                                votos =  proyecto.votos + 1;
+                            };
+                           ignore Map.put<Pid, Proyecto>(proyectosAprobados, thash, id, proyectoActualizado); 
+                        } 
+                    };
+                };
+            };
+        };
+    };
 
 };

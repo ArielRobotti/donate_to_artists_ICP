@@ -9,6 +9,7 @@ module {
         nick : Text;
         email : Text;
         foto : ?Blob;
+        proyectosVotados : [Pid];
     };
 
     public type RegistroArtistaForm = {
@@ -68,6 +69,7 @@ module {
         plasoEstimadoEnMeses: Nat;
         fechaAprobacion: Int;
         fondosObtenidos: Nat;
+        votos : Nat;
         estado: Estado;
     }
 
