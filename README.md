@@ -39,4 +39,15 @@ Dicho contacto se validará mediante el envio de un código de verificacion desd
 * Un artista podrá registrarse bajo el rol de Artista habiendose registrado previamente como Usuario verificado, y completando un formulario de registro, el cual posteriormente será evaluado por la administración.
 ###
 * El primer administador de la plataforma será el deployer del Canister backend, y en calidad de administrador podrá agregar a otros administradores con la sola condición de que éstos estén registrados como usuarios. Los administradores también podrán agregar a otros administradores con la misma condición, pero la exclusividad de eliminar administradores será del deployer del canister y éste no podrá eliminarse a si mismo.
+---
+## Funcionamiento y potestades de la Administración
+### Los administradores podrán
+* Aprobar o rechazar las solicitudes de registro de artistas.
+####
+* Aprobar o rechazar las solicitudes de financiamiento para proyectos de producción musical o audiovisual que los artistas ingresen a la mesa de entrada. (este mecanismo debe ser revisado en una instancia de desarrollo posterior, estableciendo en su lugar un mecanismo de aprobación que involucre un consenso entre los administradores).
+
+####
+* Agregar nuevos administradores.
+###
+---
 
