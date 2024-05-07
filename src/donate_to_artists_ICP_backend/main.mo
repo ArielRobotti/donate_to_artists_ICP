@@ -4,13 +4,14 @@ import Iter "mo:base/Iter";
 import Map "mo:map/Map";
 import { thash; phash } "mo:map/Map";
 import Time "mo:base/Time";
-import Array "mo:base/Array";
+// import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Text "mo:base/Text";
 import Set "mo:map/Set";
 import Types "./types";
+import Manifiesto "manifiesto";
 
-shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
+shared ({ caller }) actor class _Plataforma() {
 
     stable let deployer = caller;
 
@@ -47,9 +48,9 @@ shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
     stable let artistas = Map.new<Principal, Artista>();
     stable let admins = Set.new<Principal>();
 
-    for (i in _admins.vals()) {
-        ignore Set.put<Principal>(admins, Map.phash, i);
-    };
+    // for (i in _admins.vals()) {
+    //     ignore Set.put<Principal>(admins, Map.phash, i);
+    // };
 
     stable let artistasIngresantes = Map.new<Principal, RegistroArtistaForm>();
     stable let proyectosIngresantes = Map.new<Principal, FinanciamientoForm>();
@@ -249,7 +250,7 @@ shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
     };
 
     //------------------------------    Votar proyectos  --------------------------------
-    
+
     public shared ({ caller }) func votarProyecto(id : Pid) : async () {
         let usuario = Map.get<Principal, Usuario>(usuarios, phash, caller);
         switch usuario {
@@ -259,17 +260,36 @@ shared ({ caller }) actor class _Plataforma(_admins : [Principal]) {
                 switch proyecto {
                     case null { return };
                     case (?proyecto) {
-                        if (enArray<Pid>(usuario.proyectosVotados, id, Text.equal)){
+                        if (not enArray<Pid>(usuario.proyectosVotados, id, Text.equal)) {
                             let proyectoActualizado = {
                                 proyecto with
-                                votos =  proyecto.votos + 1;
+                                votos = proyecto.votos + 1;
                             };
-                           ignore Map.put<Pid, Proyecto>(proyectosAprobados, thash, id, proyectoActualizado); 
-                        } 
+                            ignore Map.put<Pid, Proyecto>(proyectosAprobados, thash, id, proyectoActualizado);
+                        };
                     };
                 };
             };
         };
     };
+
+    public shared ({ caller }) func comprarTokens() : async () {
+        //TODO
+    };
+
+    public query func verNombreProyecto(): async Text{
+        "Donate to artists ICP\n" #
+        "Hackathon On line ICP Hub México ";
+    };
+
+    public query func verTeam(): async Text {
+        "Manuel Niño\nAriel Robotti";
+    };
+
+    public query func verManifiesto(): async [Text] {
+        Manifiesto.manifiesto;
+
+    }
+
 
 };
