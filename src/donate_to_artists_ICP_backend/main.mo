@@ -292,7 +292,19 @@ shared ({ caller }) actor class _Plataforma() {
 
     public query func verManifiesto(): async [Text] {
         Manifiesto.manifiesto;
-    }
+    };
+
+    // public query func registeredUsers(): async Nat{
+    //     map
+    // };
+
+    public query func statusPlatform(): async [{key: Text; value: Text}]{
+        [
+            {key = "Users"; value = Nat.toText(Map.size(usuarios))},
+            {key = "Artist"; value = Nat.toText(Map.size(artistas))},
+            {key = "Projects"; value = Nat.toText(Map.size(proyectosAprobados))} 
+        ]
+    };
 
 
 };
