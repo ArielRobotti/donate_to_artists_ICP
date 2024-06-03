@@ -125,7 +125,7 @@ shared ({ caller }) actor class _Plataforma() {
         };
     };
 
-    public shared ({ caller }) func verArtistasIngresantes() : async [(Principal, RegistroArtistaForm)] {
+    public shared query ({ caller }) func verArtistasIngresantes() : async [(Principal, RegistroArtistaForm)] {
         assert (esAdmin(caller));
         Iter.toArray(Map.entries<Principal, RegistroArtistaForm>(artistasIngresantes));
     };
@@ -158,7 +158,7 @@ shared ({ caller }) actor class _Plataforma() {
 
     //-------------------- Funcion para armar galeria de artistas en el front ----------------------------
 
-    public func verArtistas() : async [Artista] {
+    public query func verArtistas() : async [Artista] {
         Iter.toArray(Map.vals<Principal, Artista>(artistas));
     };
 
@@ -179,7 +179,7 @@ shared ({ caller }) actor class _Plataforma() {
 
     //----------------- Ver solicitudes de financiamiento ---------------------------------------------------
 
-    public shared ({ caller }) func verSolicitudesFinanciamiento() : async [(Principal, FinanciamientoForm)] {
+    public shared query ({ caller }) func verSolicitudesFinanciamiento() : async [(Principal, FinanciamientoForm)] {
         assert (esAdmin(caller));
         let iterEntries = Map.entries<Principal, FinanciamientoForm>(proyectosIngresantes);
         Iter.toArray<(Principal, FinanciamientoForm)>(iterEntries);
